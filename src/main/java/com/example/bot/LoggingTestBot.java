@@ -40,13 +40,13 @@ public class LoggingTestBot extends TelegramLongPollingBot {
     public String getBotUsername() {
         // Return bot username
         // If bot username is @MyAmazingBot, it must return 'MyAmazingBot'
-        return "best_Anti_LinkBot";
+        return "thunder_reportBot";
     }
 
     @Override
     public String getBotToken() {
         // Return bot token from BotFather
-        return "5266856568:AAGR4RPA1vP888UJ7oBw9-AnDLsAiQB3UlY";
+        return "5604897269:AAH2igtZlOjUGMX3q72ojXDsAx8pc2_IcwQ";
     }
 
     private void log(String first_name, String last_name, String user_id, String txt, String bot_answer) {
