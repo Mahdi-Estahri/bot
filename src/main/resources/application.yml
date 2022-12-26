@@ -1,17 +1,21 @@
 spring:
   jpa:
-    database-platform: "com.example.bot.model.SQLDialect"
+    database-platform: com.example.bot.model.SQLDialect
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
   datasource:
-    url: "jdbc:sqlite:x-ui.db"
+    url: jdbc:sqlite:E:/p/bakup/asl/x-ui.db
     driver-class-name: org.sqlite.JDBC
-    username: "admin"
-    password: "admin"
+    username: admin
+    password: admin
 khoinda:
   bot:
-    username: "thunder_reportBot"
-    token: "5604897269:AAH2igtZlOjUGMX3q72ojXDsAx8pc2_IcwQ"
+    username: thunder_reportBot
+    token: 5604897269:AAH2igtZlOjUGMX3q72ojXDsAx8pc2_IcwQ
     bot-route-packages:
-      - "com.example.bot"
+      - com.example.bot
     enable-auto-config: true
+    bot-owner-chat-id:
+      - 5724979708
+#    logging-chat-id: 1577189814
+    disable-default-commands: true

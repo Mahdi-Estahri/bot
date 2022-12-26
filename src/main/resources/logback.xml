@@ -1,5 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <logger name="org.apache" level="ERROR"/>
+    <appender name="consoleAppender" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <pattern>
+                %d{yyyy-MM-dd HH:mm:ss} %-5level %logger{36} - %msg%n
+            </pattern>
+        </layout>
+    </appender>
+    <logger name="org.springframework" level="info" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
+    <!--<logger name="httpclient" level="ERROR" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>-->
+    <logger name="org.apache" level="info" additivity="false">
+        <appender-ref ref="consoleAppender"/>
+    </logger>
     <logger name="httpclient" level="ERROR"/>
+    <root level="info">
+        <appender-ref ref="consoleAppender"/>
+    </root>
 </configuration>

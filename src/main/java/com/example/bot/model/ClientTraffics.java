@@ -8,14 +8,15 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "client_traffics")
+@Table(name = "client_traffics", indexes = {@Index(name = "idx_clienttraffics_email_unq", columnList = "email", unique = true)})
 public class ClientTraffics {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
-    @Column(name = "inbound_id")
-    private Integer inboundId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inbound_id")
+    private Inbounds inboundId;
 
     @Column(name = "enable")
     private Integer enable;
