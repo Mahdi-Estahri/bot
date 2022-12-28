@@ -1,13 +1,16 @@
 package com.example.bot;
 
+import com.example.bot.model.ClientTraffics;
 import com.example.bot.model.Inbounds;
 import com.example.bot.model.dto.InboundSettingClientsDto;
+import com.example.bot.service.clientTrafic.IClientTraficService;
 import com.example.bot.service.clientTrafic.IInboundsService;
 import com.example.bot.service.clientTrafic.ISettingClientsService;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import ir.huri.jcal.JalaliCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -18,9 +21,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.Keyboard
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
 
 @Component
 public class BotClass extends TelegramLongPollingBot {
@@ -30,6 +32,9 @@ public class BotClass extends TelegramLongPollingBot {
 
     @Autowired
     ISettingClientsService iSettingClientsService;
+
+    @Autowired
+    IClientTraficService iClientTraficService;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -41,15 +46,11 @@ public class BotClass extends TelegramLongPollingBot {
             SendMessage msg = new SendMessage();
             var messageText = update.getMessage().getText();
             var userId = update.getMessage().getFrom().getId();
+            if (messageText.equals("/start")) {
+                sendMessageText("به ربات Thunder VPN خوش آمدید\n" + "برای ادامه و استفاده از ربات لطفا کانفیگ خود را اینجا بفرستید.", userId);
+            }
             if (messageText.startsWith("vless")) {
                 var configId = messageText.substring(messageText.lastIndexOf("://") + 3, messageText.indexOf("@"));
-                msg.setText(configId);
-                msg.setChatId(String.valueOf(userId));
-                try {
-                    execute(msg);
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
                 var port = messageText.substring(messageText.lastIndexOf(":") + 1, messageText.indexOf("?"));
                 Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(port);
                 var inboundSetting = inbounds.getSettings();
@@ -61,11 +62,24 @@ public class BotClass extends TelegramLongPollingBot {
                 if (inboundSettingClientsDtos != null) {
                     inboundSettingClientsDtos.forEach(c -> {
                         if (c.getId().equals(configId)) {
-                            String clientInfo = "کاربر: " + userFullName + "\n" + "نام کاربری: " + c.getEmail() + "\n" + "مقدار حجم خریداری شده(GB): " + c.getTotalGB() + "\n";
+                            String clientInfo = "کاربر: " + userFullName + "\n" + "نام کاربری: " + c.getEmail() + "\n";
+                            clientInfo += calculateTotal(c.getTotalGB());
+                            clientInfo += calculateUsage(c.getEmail());
+                            clientInfo += "تعداد کاربر مجاز: " + c.getLimitIp() + "\n";
+                            if (c.getExpiryTime() != null && c.getExpiryTime() != 0) {
+                                clientInfo += " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
+                            }
                             sendMessageText(clientInfo, userId);
                         }
                     });
                 }
+            }
+            if (messageText.startsWith("vmess")) {
+                var configId = messageText.substring(messageText.lastIndexOf("://") + 3);
+                byte[] bytes = new byte[0];
+                byte[] decoded = Base64.getDecoder().decode(configId);
+                String decodedStr = new String(decoded, StandardCharsets.UTF_8);
+                sendMessageText(decodedStr, userId);
             }
         }
     }
@@ -84,6 +98,57 @@ public class BotClass extends TelegramLongPollingBot {
             e.printStackTrace();
         }
         return null;
+    }
+
+    private String calculateTotal(Long hajm) {
+        if (hajm == 0) {
+            return "مقدار حجم خریداری شده: نامحدود \n";
+        }
+        if (hajm <= 1024) {
+            return "مقدار حجم خریداری شده(B): " + hajm + "بایت \n";
+        }
+        if (hajm <= 1024 * 1024) {
+            return "مقدار حجم خریداری شده(KB): " + hajm / 1024 + "کیلوبایت \n";
+        }
+        if (hajm <= Long.parseLong("1073741824")) {
+            return "مقدار حجم خریداری شده(MB): " + hajm / (1024 * 1024) + "مگابایت \n";
+        }
+        if (hajm <= Long.parseLong("1099511627776")) {
+            return "مقدار حجم خریداری شده(GB): " + hajm / Long.parseLong("1073741824") + "گیگابایت \n";
+        }
+        if (hajm <= Long.parseLong("1125899906842624")) {
+            return "مقدار حجم خریداری شده(TB): " + hajm / Long.parseLong("1099511627776") + "ترابایت \n";
+        } else {
+            return "\n";
+        }
+    }
+
+    private String calculateTime(Long expiryTime) {
+        Date date = new Date(expiryTime);
+        JalaliCalendar shamsiExpireDate = new JalaliCalendar(date);
+        return shamsiExpireDate.getYear() + "/" + shamsiExpireDate.getMonth() + "/" + shamsiExpireDate.getDay();
+    }
+
+    private String calculateUsage(String email) {
+        ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(email);
+        var usage = clientTraffics.getDownload() + clientTraffics.getUpload();
+        if (usage <= 1024) {
+            return "مقدار حجم مصرف شده(B): " + usage + "\n";
+        }
+        if (usage <= 1024 * 1024) {
+            return "مقدار حجم مصرف شده(KB): " + usage / 1024 + "\n";
+        }
+        if (usage <= Long.parseLong("1073741824")) {
+            return "مقدار حجم مصرف شده(MB): " + usage / (1024 * 1024) + "\n";
+        }
+        if (usage <= Long.parseLong("1099511627776")) {
+            return "مقدار حجم مصرف شده(GB): " + usage / Long.parseLong("1073741824") + "\n";
+        }
+        if (usage <= Long.parseLong("1125899906842624")) {
+            return "مقدار حجم مصرف شده(TB): " + usage / Long.parseLong("1099511627776") + "\n";
+        } else {
+            return "\n";
+        }
     }
 
     public void sendMessageText(String text, Long userId) {

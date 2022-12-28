@@ -32,6 +32,6 @@ public class InboundSettingClients {
     private Long totalGB;
 
     @Column(name = "expiryTime")
-    private String expiryTime;
+    private Long expiryTime;
 
 }

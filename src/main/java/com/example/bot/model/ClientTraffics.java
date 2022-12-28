@@ -25,15 +25,15 @@ public class ClientTraffics {
     private String email;
 
     @Column(name = "up")
-    private Integer upload;
+    private Long upload;
 
     @Column(name = "down")
-    private Integer download;
+    private Long download;
 
     @Column(name = "expiry_time")
-    private Integer expiryTime;
+    private Long expiryTime;
 
     @Column(name = "total")
-    private Integer total;
+    private Long total;
 
 }

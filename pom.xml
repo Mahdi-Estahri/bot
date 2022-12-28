@@ -16,13 +16,19 @@
     <properties>
         <java.version>17</java.version>
     </properties>
-    <repositories>
+    <!--<repositories>
         <repository>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-    </repositories>
+    </repositories>-->
     <dependencies>
+        <!-- https://mvnrepository.com/artifact/ir.huri/JalaliCalendar -->
+        <dependency>
+            <groupId>ir.huri</groupId>
+            <artifactId>JalaliCalendar</artifactId>
+            <version>1.3.3</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
@@ -33,12 +39,11 @@
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.40.0.0</version>
         </dependency>
-
-        <dependency>
+        <!--<dependency>
             <groupId>com.github.ndanhkhoi</groupId>
             <artifactId>simple-telegram-command-bot-spring-boot-starter</artifactId>
             <version>2022.10.05</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>

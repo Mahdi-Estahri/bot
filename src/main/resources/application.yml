@@ -8,14 +8,14 @@ spring:
     driver-class-name: org.sqlite.JDBC
     username: admin
     password: admin
-khoinda:
-  bot:
-    username: thunder_reportBot
-    token: 5604897269:AAH2igtZlOjUGMX3q72ojXDsAx8pc2_IcwQ
-    bot-route-packages:
-      - com.example.bot
-    enable-auto-config: true
-    bot-owner-chat-id:
-      - 5724979708
+#khoinda:
+#  bot:
+#    username: thunder_reportBot
+#    token: 5604897269:AAH2igtZlOjUGMX3q72ojXDsAx8pc2_IcwQ
+#    bot-route-packages:
+#      - com.example.bot
+#    enable-auto-config: true
+#    bot-owner-chat-id:
+#      - 5724979708
 #    logging-chat-id: 1577189814
-    disable-default-commands: true
+#    disable-default-commands: true

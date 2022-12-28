@@ -35,7 +35,7 @@ public class Inbounds {
     private Boolean enable;
 
     @Column(name = "expiry_time")
-    private Integer expiryTime;
+    private Long expiryTime;
 
     @Column(name = "listen")
     private String listen;
