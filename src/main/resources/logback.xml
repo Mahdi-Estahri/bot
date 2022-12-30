@@ -10,14 +10,14 @@
     <logger name="org.springframework" level="info" additivity="false">
         <appender-ref ref="consoleAppender"/>
     </logger>
-    <!--<logger name="httpclient" level="ERROR" additivity="false">
+    <logger name="httpclient" level="info" additivity="false">
         <appender-ref ref="consoleAppender"/>
-    </logger>-->
+    </logger>
     <logger name="org.apache" level="info" additivity="false">
         <appender-ref ref="consoleAppender"/>
     </logger>
-    <logger name="httpclient" level="ERROR"/>
-    <root level="info">
-        <appender-ref ref="consoleAppender"/>
-    </root>
+    <!--    <logger name="org.apache" level="ERROR"/>-->
+    <!--  <root level="ERROR">
+          <appender-ref ref="consoleAppender"/>
+      </root>-->
 </configuration>

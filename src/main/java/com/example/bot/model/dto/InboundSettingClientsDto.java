@@ -11,6 +11,7 @@ public class InboundSettingClientsDto {
     private String flow;
     private String email;
     private Integer limitIp;
+    private Integer alterId;
     private Long totalGB;
     private Long expiryTime;
 }
