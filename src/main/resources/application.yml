@@ -4,7 +4,7 @@ spring:
     hibernate:
       ddl-auto: none
   datasource:
-    url: jdbc:sqlite:E:/p/bakup/asl/x-ui.db
+    url: jdbc:sqlite:E:/p/bakup/x-ui.db
     driver-class-name: org.sqlite.JDBC
     username: admin
     password: admin

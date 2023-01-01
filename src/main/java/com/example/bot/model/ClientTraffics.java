@@ -25,10 +25,10 @@ public class ClientTraffics {
     private String email;
 
     @Column(name = "up")
-    private Long upload;
+    private Float upload;
 
     @Column(name = "down")
-    private Long download;
+    private Float download;
 
     @Column(name = "expiry_time")
     private Long expiryTime;

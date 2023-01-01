@@ -12,6 +12,6 @@ public class InboundSettingClientsDto {
     private String email;
     private Integer limitIp;
     private Integer alterId;
-    private Long totalGB;
+    private Float totalGB;
     private Long expiryTime;
 }
