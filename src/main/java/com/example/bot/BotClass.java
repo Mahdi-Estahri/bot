@@ -1,12 +1,12 @@
 package com.example.bot;
 
 import com.example.bot.model.ClientTraffics;
+import com.example.bot.model.ClientTraffics2;
 import com.example.bot.model.Inbounds;
+import com.example.bot.model.Inbounds2;
 import com.example.bot.model.dto.InboundSettingClientsDto;
 import com.example.bot.model.dto.VmessDto;
-import com.example.bot.service.clientTrafic.IClientTraficService;
-import com.example.bot.service.clientTrafic.IInboundsService;
-import com.example.bot.service.clientTrafic.ISettingClientsService;
+import com.example.bot.service.clientTrafic.*;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -35,19 +35,25 @@ public class BotClass extends TelegramLongPollingBot {
     public String helloUser = "سلام به ربات رعدوبرق خوش اومدید! ";
 
     //    @Value("#{bot['com.example.bot.joinChannelForUserBot']}")
-    public String joinChannelForUserBot = " کاربر گرامی جهت استفاده از این ربات، ابتدا در کانال ما عضو شوید:\n سپس دستور /start را مجددا ارسال نمایید ";
+    public String joinChannelForUserBot = " کاربر گرامی جهت استفاده از این ربات، ابتدا در کانال ما عضو شوید:\n " + EmojiParser.parseToUnicode(":zap: ") + "@thunder_fastvpn" + EmojiParser.parseToUnicode(":zap: \n") + "سپس دستور /start را مجددا ارسال نمایید ";
 
     //    @Value("#{bot['com.example.bot.selectOption']}")
-    public String selectOption = "کانفیگتو بفرست";
+    public String selectOption = "برای ادامه و مشاهده جزئیات اشتراک خود کانفیگ (vmess یا vless) خود را ارسال نمایید";
 
     @Autowired
     IInboundsService iInboundsService;
+
+    @Autowired
+    IInboundsService2 iInboundsService2;
 
     @Autowired
     ISettingClientsService iSettingClientsService;
 
     @Autowired
     IClientTraficService iClientTraficService;
+
+    @Autowired
+    IClientTraficService2 iClientTraficService2;
 
     @Override
     @SneakyThrows
@@ -71,24 +77,120 @@ public class BotClass extends TelegramLongPollingBot {
             if (checkChannelMember(update)) {
                 if (messageText.startsWith("vless")) {
                     var configId = messageText.substring(messageText.lastIndexOf("://") + 3, messageText.indexOf("@"));
+                    var host = messageText.substring(messageText.lastIndexOf("@") + 1, messageText.indexOf(".mamadbyavar.ir:"));
                     var port = messageText.substring(messageText.lastIndexOf(":") + 1, messageText.indexOf("?"));
-                    if (port != null && configId != null) {
-                        Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(port);
+                    if (host != null && host.equals("m")) {
+                        if (port != null && configId != null) {
+                            Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(port);
+                            if (inbounds != null) {
+                                var inboundSetting = inbounds.getSettings();
+                                inboundSetting = inboundSetting.replace("{\n  \"clients\": ", "");
+                                inboundSetting = inboundSetting.replace("\n", "");
+                                inboundSetting = inboundSetting.replace(" ", "");
+                                inboundSetting = inboundSetting.replace(",\"decryption\":\"none\",\"fallbacks\":[]}", "");
+                                Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
+                                if (inboundSettingClientsDtos != null) {
+                                    inboundSettingClientsDtos.forEach(c -> {
+                                        if (c.getId().equals(configId)) {
+                                            ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
+                                            Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
+                                            String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
+//                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTeraffic(c.getTotalGB(), "خریداری شده") + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTeraffic(usage, "مصرف شده") + "\n";
+                                            if (c.getTotalGB() != 0) {
+                                                clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic((c.getTotalGB() - usage), "باقیمانده") + "\n";
+                                            } else {
+                                                clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic(0F, "باقیمانده") + "\n";
+                                            }
+                                            clientInfo += EmojiParser.parseToUnicode(":busts_in_silhouette: ") + "تعداد کاربر مجاز: " + (c.getLimitIp() != 0 ? c.getLimitIp() : "بدون محدودیت") + "\n";
+                                            if (c.getExpiryTime() != null && c.getExpiryTime() != 0) {
+                                                clientInfo += EmojiParser.parseToUnicode(":date: ") + " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
+                                            }
+                                            sendMessageText(clientInfo, userId);
+                                        }
+                                    });
+                                } else {
+                                    sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                                }
+                            } else {
+                                sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                            }
+                        } else {
+                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                        }
+                    } else if (host != null && host.equals("server1")) {
+                        if (port != null && configId != null) {
+                            Inbounds2 inbounds = iInboundsService2.getInbounds2ByTagEndingWith(port);
+                            if (inbounds != null) {
+                                var inboundSetting = inbounds.getSettings();
+                                inboundSetting = inboundSetting.replace("{\n  \"clients\": ", "");
+                                inboundSetting = inboundSetting.replace("\n", "");
+                                inboundSetting = inboundSetting.replace(" ", "");
+                                inboundSetting = inboundSetting.replace(",\"decryption\":\"none\",\"fallbacks\":[]}", "");
+                                Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
+                                if (inboundSettingClientsDtos != null) {
+                                    inboundSettingClientsDtos.forEach(c -> {
+                                        if (c.getId().equals(configId)) {
+                                            ClientTraffics2 clientTraffics2 = iClientTraficService2.getClientTraffics2ByEmailEquals(c.getEmail());
+                                            Float usage = clientTraffics2.getDownload() + clientTraffics2.getUpload();
+                                            String clientInfo = (clientTraffics2.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics2.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
+//                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTeraffic(c.getTotalGB(), "خریداری شده") + "\n";
+                                            clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTeraffic(usage, "مصرف شده") + "\n";
+                                            if (c.getTotalGB() != 0) {
+                                                clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic((c.getTotalGB() - usage), "باقیمانده") + "\n";
+                                            } else {
+                                                clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic(0F, "باقیمانده") + "\n";
+                                            }
+                                            clientInfo += EmojiParser.parseToUnicode(":busts_in_silhouette: ") + "تعداد کاربر مجاز: " + (c.getLimitIp() != 0 ? c.getLimitIp() : "بدون محدودیت") + "\n";
+                                            if (c.getExpiryTime() != null && c.getExpiryTime() != 0) {
+                                                clientInfo += EmojiParser.parseToUnicode(":date: ") + " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
+                                            }
+                                            sendMessageText(clientInfo, userId);
+                                        }
+                                    });
+                                } else {
+                                    sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                                }
+                            } else {
+                                sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                            }
+                        } else {
+                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                        }
+                    } else {
+                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                    }
+                }
+                if (messageText.startsWith("vmess")) {
+                    var str = messageText.substring(messageText.lastIndexOf("://") + 3);
+                    byte[] bytes = new byte[0];
+                    byte[] decoded = Base64.getDecoder().decode(str);
+                    String decodedStr = new String(decoded, StandardCharsets.UTF_8);
+                    VmessDto vmessDto = ConvertJsonToModelVmess(decodedStr);
+                    if (vmessDto != null && vmessDto.getAdd().equals("m.mamadbyavar.ir")) {
+                        Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(vmessDto.getPort());
                         if (inbounds != null) {
                             var inboundSetting = inbounds.getSettings();
-                            inboundSetting = inboundSetting.replace("{\n  \"clients\": ", "");
+                            inboundSetting = inboundSetting.replace("\r", "");
+                            inboundSetting = inboundSetting.replace("{   \"clients\": ", "");
                             inboundSetting = inboundSetting.replace("\n", "");
                             inboundSetting = inboundSetting.replace(" ", "");
-                            inboundSetting = inboundSetting.replace(",\"decryption\":\"none\",\"fallbacks\":[]}", "");
+                            inboundSetting = inboundSetting.replace(",\"disableInsecureEncryption\":false}", "");
                             Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
                             if (inboundSettingClientsDtos != null) {
                                 inboundSettingClientsDtos.forEach(c -> {
-                                    if (c.getId().equals(configId)) {
+                                    if (c.getId().equals(vmessDto.getId())) {
                                         ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
                                         Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
                                         String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
+
                                         clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
-                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
+
+//                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
                                         clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTeraffic(c.getTotalGB(), "خریداری شده") + "\n";
                                         clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTeraffic(usage, "مصرف شده") + "\n";
                                         if (c.getTotalGB() != 0) {
@@ -107,34 +209,24 @@ public class BotClass extends TelegramLongPollingBot {
                                 sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
                             }
                         } else {
-                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
                         }
-                    } else {
-                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
-                    }
-                }
-                if (messageText.startsWith("vmess")) {
-                    var str = messageText.substring(messageText.lastIndexOf("://") + 3);
-                    byte[] bytes = new byte[0];
-                    byte[] decoded = Base64.getDecoder().decode(str);
-                    String decodedStr = new String(decoded, StandardCharsets.UTF_8);
-                    VmessDto vmessDto = ConvertJsonToModelVmess(decodedStr);
-                    if (vmessDto != null && vmessDto.getAdd().endsWith(".mamadbyavar.ir")) {
-                        Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(vmessDto.getPort());
+                    } else if (vmessDto != null && vmessDto.getAdd().equals("server1.mamadbyavar.ir")) {
+                        Inbounds2 inbounds = iInboundsService2.getInbounds2ByTagEndingWith(vmessDto.getPort());
                         if (inbounds != null) {
                             var inboundSetting = inbounds.getSettings();
                             inboundSetting = inboundSetting.replace("\r", "");
-                            inboundSetting = inboundSetting.replace("{\n  \"clients\": ", "");
                             inboundSetting = inboundSetting.replace("\n", "");
                             inboundSetting = inboundSetting.replace(" ", "");
+                            inboundSetting = inboundSetting.replace("{\"clients\":", "");
                             inboundSetting = inboundSetting.replace(",\"disableInsecureEncryption\":false}", "");
                             Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
                             if (inboundSettingClientsDtos != null) {
                                 inboundSettingClientsDtos.forEach(c -> {
                                     if (c.getId().equals(vmessDto.getId())) {
-                                        ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
-                                        Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
-                                        String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
+                                        ClientTraffics2 clientTraffics2 = iClientTraficService2.getClientTraffics2ByEmailEquals(c.getEmail());
+                                        Float usage = clientTraffics2.getDownload() + clientTraffics2.getUpload();
+                                        String clientInfo = (clientTraffics2.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics2.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
 
                                         clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
 

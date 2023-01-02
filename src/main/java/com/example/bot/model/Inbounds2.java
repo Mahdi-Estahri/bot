@@ -8,8 +8,8 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "inbounds", indexes = {@Index(name = "idx_inbounds_tag_port_unq", columnList = "tag, port", unique = true)})
-public class Inbounds {
+@Table(name = "inbounds2", indexes = {@Index(name = "idx_inbounds_tag_port_unq2", columnList = "tag, port", unique = true)})
+public class Inbounds2 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")

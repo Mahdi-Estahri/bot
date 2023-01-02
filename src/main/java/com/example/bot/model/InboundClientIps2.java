@@ -8,9 +8,9 @@ import javax.persistence.*;
 @Getter
 @Setter
 @Entity
-@Table(name = "inbound_client_ips", indexes = {@Index(name = "idx_inboundclientips_unq", columnList = "client_email", unique = true)})
+@Table(name = "inbound_client_ips2", indexes = {@Index(name = "idx_inboundclientips_unq2", columnList = "client_email", unique = true)})
 
-public class InboundClientIps {
+public class InboundClientIps2 {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")
