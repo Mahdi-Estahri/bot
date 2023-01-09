@@ -13,8 +13,11 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -23,6 +26,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
+import static java.lang.Math.toIntExact;
 
 @Component
 public class Admin extends TelegramLongPollingBot {
@@ -54,7 +59,7 @@ public class Admin extends TelegramLongPollingBot {
                 System.out.println(messageText);
                 if (messageText.equals("/start")) {
                     sendMessageText(EmojiParser.parseToUnicode(":zap: ") + "hi", userId);
-//                    setKeyboard(chat_id);
+                    setKeyboard(chat_id);
                 } else if (messageText.startsWith("/port")) {
                     var port = messageText.substring(messageText.lastIndexOf("/port ") + 6);
                     if (!port.equals("") && !port.startsWith("/port")) {
@@ -78,6 +83,47 @@ public class Admin extends TelegramLongPollingBot {
                     var qr = messageText.substring(messageText.lastIndexOf("/qr ") + 4);
                     System.out.println(getQRCode(qr));
                     getQRCode(qr);
+                } else if (messageText.equals("ساختن اشتراک")) {
+                    SendMessage message = new SendMessage(); // Create a message object object
+                    message.setChatId(chat_id);
+                    message.setText("You send /start");
+                    InlineKeyboardMarkup markupInline = new InlineKeyboardMarkup();
+                    List<List<InlineKeyboardButton>> rowsInline = new ArrayList<>();
+                    List<InlineKeyboardButton> rowInlines = new ArrayList<>();
+                    InlineKeyboardButton inlineKeyboardButton = new InlineKeyboardButton();
+                    inlineKeyboardButton.setText("Update message text");
+                    inlineKeyboardButton.setCallbackData("update_msg_text");
+                    rowInlines.add(inlineKeyboardButton);
+                    // Set the keyboard to the markup
+                    rowsInline.add(rowInlines);
+                    // Add it to the message
+                    markupInline.setKeyboard(rowsInline);
+                    message.setReplyMarkup(markupInline);
+                    try {
+                        execute(message); // Sending our message object to user
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    onClosing();
+                }
+
+            } else if (update.hasCallbackQuery()) {
+                // Set variables
+                String call_data = update.getCallbackQuery().getData();
+                long message_id = update.getCallbackQuery().getMessage().getMessageId();
+
+                if (call_data.equals("update_msg_text")) {
+                    String answer = "Updated message text";
+                    EditMessageText new_message = new EditMessageText();
+                    new_message.setChatId(chat_id);
+                    new_message.setMessageId(toIntExact(message_id));
+                    new_message.setText(answer);
+                    try {
+                        execute(new_message);
+                    } catch (TelegramApiException e) {
+                        e.printStackTrace();
+                    }
                 } else {
                     sendMessageText("داداچ اشتباه میزنی", userId);
                     onClosing();
@@ -106,7 +152,7 @@ public class Admin extends TelegramLongPollingBot {
         ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
         List<KeyboardRow> keyboardRows = new ArrayList<>();
         KeyboardRow keyboardButton = new KeyboardRow();
-        keyboardButton.add("تغییر پورت");
+        keyboardButton.add("ساختن اشتراک");
        /* keyboardButton.add("1.2");
         keyboardButton.add("1.3");*/
         keyboardRows.add(keyboardButton);
