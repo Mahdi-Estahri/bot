@@ -13,7 +13,7 @@ public class BotApplication {
         SpringApplication.run(BotApplication.class, args);
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            telegramBotsApi.registerBot(new BotClass());
+            telegramBotsApi.registerBot(new Admin());
 //            telegramBotsApi.registerBot( new HelloWorldBotRoute());
         } catch (TelegramApiException e) {
             e.printStackTrace();

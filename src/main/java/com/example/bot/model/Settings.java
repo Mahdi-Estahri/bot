@@ -11,7 +11,6 @@ import javax.persistence.*;
 @Table(name = "settings")
 public class Settings {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")
     private Integer id;
 
     @Column(name = "key")

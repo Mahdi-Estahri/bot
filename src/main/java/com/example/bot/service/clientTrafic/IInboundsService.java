@@ -6,7 +6,6 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface IInboundsService extends CrudRepository<Inbounds, Integer> {
-    Inbounds findInboundsByTagContaining(String port);
 
     Inbounds getInboundsByTagEndingWith(String port);
 }

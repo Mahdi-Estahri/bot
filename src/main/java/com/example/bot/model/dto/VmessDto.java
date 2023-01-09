@@ -18,4 +18,6 @@ public class VmessDto {
     private String id;
     private String ps;
     private String v;
+    private String alpn;
+    private String scy;
 }

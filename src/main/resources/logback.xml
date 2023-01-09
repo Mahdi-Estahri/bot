@@ -7,13 +7,13 @@
             </pattern>
         </layout>
     </appender>
-    <logger name="org.springframework" level="info" additivity="false">
+    <logger name="org.springframework" level="info">
         <appender-ref ref="consoleAppender"/>
     </logger>
-    <logger name="httpclient" level="info" additivity="false">
+    <logger name="httpclient" level="info">
         <appender-ref ref="consoleAppender"/>
     </logger>
-    <logger name="org.apache" level="info" additivity="false">
+    <logger name="org.apache" level="info">
         <appender-ref ref="consoleAppender"/>
     </logger>
     <!--    <logger name="org.apache" level="ERROR"/>-->

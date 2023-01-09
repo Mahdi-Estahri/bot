@@ -1,5 +1,3 @@
-//package com.springboot.sqlite;
-/*
 package com.example.bot.model;
 
 import org.hibernate.dialect.Dialect;
@@ -134,4 +132,4 @@ public class SQLDialect extends Dialect {
     public boolean supportsCascadeDelete() {
         return false;
     }
-}*/
+}
