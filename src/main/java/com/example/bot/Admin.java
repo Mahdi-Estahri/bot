@@ -1,6 +1,7 @@
 package com.example.bot;
 
 import com.example.bot.model.Inbounds;
+import com.example.bot.model.Users;
 import com.example.bot.service.admin.ISettingService;
 import com.example.bot.service.clientTrafic.IClientTraficService;
 import com.example.bot.service.clientTrafic.IInboundsService;
@@ -70,8 +71,9 @@ public class Admin extends TelegramLongPollingBot {
                     System.out.println(getQRCode(qr));
                     getQRCode(qr);
                 } else if (messageText.equals("new Inbound")) {
-                   /* ServerSocket s = new ServerSocket(0);
+                    ServerSocket s = new ServerSocket(0);
                     UUID uuid = UUID.randomUUID();
+                    Users users = new Users();
                     System.out.println("listening on port: " + s.getLocalPort());
                     Inbounds inbounds = new Inbounds();
                     inbounds.setId(-1);
@@ -80,16 +82,16 @@ public class Admin extends TelegramLongPollingBot {
                     inbounds.setListen("");
                     inbounds.setDownload(0L);
                     inbounds.setRemark("⚡ Thunder ⚡");
-                    inbounds.setUserId();
+                    inbounds.setUserId(users);
                     inbounds.setSettings("{\n" + "  \"clients\": [\n" + "    {\n" + "      \"id\": \"" + uuid + "\",\n" + "      \"alterId\": 0,\n" + "      \"email\": \"p1bwatz0e@tst\",\n" + "      \"limitIp\": 2,\n" + "      \"totalGB\": 2147483648,\n" + "      \"expiryTime\": \"\"\n" + "    }\n" + "  ],\n" + "  \"disableInsecureEncryption\": false\n" + "}");
-                    inbounds.setTag();
-                    inbounds.setSniffing();
+                    inbounds.setTag("inbound-" + localServerPort);
+                    inbounds.setSniffing("{\n" + "  \"enabled\": true,\n" + "  \"destOverride\": [\n" + "    \"http\",\n" + "    \"tls\"\n" + "  ]\n" + "}");
                     inbounds.setUpload(0L);
-                    inbounds.setStreamSettings();
+                    inbounds.setStreamSettings("{\n" + "  \"network\": \"ws\",\n" + "  \"security\": \"tls\",\n" + "  \"tlsSettings\": {\n" + "    \"serverName\": \"server1.mamadbyavar.ir\",\n" + "    \"certificates\": [\n" + "      {\n" + "        \"certificateFile\": \"/root/cert/server1.mamadbyavar.ir.cer\",\n" + "        \"keyFile\": \"/root/cert/server1.mamadbyavar.ir.key\"\n" + "      }\n" + "    ],\n" + "    \"alpn\": []\n" + "  },\n" + "  \"wsSettings\": {\n" + "    \"acceptProxyProtocol\": false,\n" + "    \"path\": \"/\",\n" + "    \"headers\": {}\n" + "  }\n" + "}");
                     inbounds.setTotal(0L);
                     inbounds.setExpiryTime(0L);
                     inbounds.setPort(localServerPort);
-                    sendMessageText("پورت: " +); iInboundsService.save()*/
+//                    sendMessageText("پورت: " +); iInboundsService.save()
                 } else if (messageText.equals("InboundReports")) {
                     sendMessageText(iInboundsService.findAll().iterator().toString(), userId);
                 } else {
