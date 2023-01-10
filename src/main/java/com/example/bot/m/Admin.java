@@ -1,4 +1,4 @@
-/*
+package com.example.bot.m;/*
 package com.example.bot;
 
 import com.example.bot.model.Settings;

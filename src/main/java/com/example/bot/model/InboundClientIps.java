@@ -13,7 +13,7 @@ import javax.persistence.*;
 public class InboundClientIps {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_inbound_client_ips")
     private Integer id;
 
     @Column(name = "client_email")
