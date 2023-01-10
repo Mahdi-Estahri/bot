@@ -1,5 +1,6 @@
 package com.example.bot;
 
+import com.example.bot.m.UserBotClass;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
@@ -14,7 +15,7 @@ public class BotApplication {
         try {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
 //            telegramBotsApi.registerBot(new Admin());
-            telegramBotsApi.registerBot(new BotClass());
+            telegramBotsApi.registerBot(new UserBotClass());
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }

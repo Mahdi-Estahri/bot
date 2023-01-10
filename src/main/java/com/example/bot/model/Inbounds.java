@@ -12,7 +12,7 @@ import javax.persistence.*;
 public class Inbounds {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inbounds_db")
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
