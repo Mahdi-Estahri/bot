@@ -35,5 +35,4 @@ public class ClientTraffics {
 
     @Column(name = "total")
     private Long total;
-
 }

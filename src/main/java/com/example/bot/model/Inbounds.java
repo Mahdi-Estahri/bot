@@ -10,9 +10,8 @@ import javax.persistence.*;
 @Entity
 @Table(name = "inbounds", indexes = {@Index(name = "idx_inbounds_tag_port_unq", columnList = "tag, port", unique = true)})
 public class Inbounds {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "inbounds_db")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -57,5 +56,4 @@ public class Inbounds {
 
     @Column(name = "sniffing")
     private String sniffing;
-
 }

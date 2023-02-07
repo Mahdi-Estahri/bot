@@ -6,7 +6,7 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/>
     </parent>
     <groupId>com.example</groupId>
     <artifactId>bot</artifactId>
@@ -16,14 +16,11 @@
     <properties>
         <java.version>11.0.17</java.version>
     </properties>
-    <!--<repositories>
-        <repository>
-            <id>jitpack.io</id>
-            <url>https://jitpack.io</url>
-        </repository>
-    </repositories>-->
     <dependencies>
-        <!-- https://mvnrepository.com/artifact/ir.huri/JalaliCalendar -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
         <dependency>
             <groupId>ir.huri</groupId>
             <artifactId>JalaliCalendar</artifactId>
@@ -33,13 +30,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.xerial/sqlite-jdbc -->
         <dependency>
             <groupId>org.xerial</groupId>
             <artifactId>sqlite-jdbc</artifactId>
             <version>3.40.0.0</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.vdurmont/emoji-java -->
         <dependency>
             <groupId>com.vdurmont</groupId>
             <artifactId>emoji-java</artifactId>
@@ -55,26 +50,16 @@
             <artifactId>javase</artifactId>
             <version>3.4.0</version>
         </dependency>
-        <!--<dependency>
-            <groupId>com.github.ndanhkhoi</groupId>
-            <artifactId>simple-telegram-command-bot-spring-boot-starter</artifactId>
-            <version>2022.10.05</version>
-        </dependency>-->
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-devtools</artifactId>
             <scope>runtime</scope>
             <optional>true</optional>
         </dependency>
-        <!--    <dependency>
-                <groupId>mysql</groupId>
-                <artifactId>mysql-connector-java</artifactId>
-                <scope>runtime</scope>
-            </dependency>-->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
-            <optional>true</optional>
+            <version>1.18.26</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -92,7 +77,6 @@
             <version>6.3.0</version>
         </dependency>
     </dependencies>
-
     <build>
         <plugins>
             <plugin>
@@ -100,7 +84,7 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <jvmArguments>
-                        -agentlib:jdwp=transport=dt_socket,address=localhost:5005,server=y,suspend=n
+                        -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=*:5005
                     </jvmArguments>
                     <excludes>
                         <exclude>

@@ -18,5 +18,4 @@ public class Settings {
 
     @Column(name = "value")
     private String value;
-
 }

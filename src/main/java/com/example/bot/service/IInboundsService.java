@@ -1,4 +1,4 @@
-package com.example.bot.service.clientTrafic;
+package com.example.bot.service;
 
 import com.example.bot.model.Inbounds;
 import org.springframework.data.repository.CrudRepository;
@@ -8,7 +8,5 @@ import java.util.List;
 
 @Repository
 public interface IInboundsService extends CrudRepository<Inbounds, Integer> {
-//    List<Inbounds> getAllByPort(Integer port);
-
     Inbounds getInboundsByTagEndingWith(String port);
 }

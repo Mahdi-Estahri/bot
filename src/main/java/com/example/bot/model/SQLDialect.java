@@ -29,11 +29,9 @@ public class SQLDialect extends Dialect {
         registerColumnType(Types.BINARY, "blob");
         registerColumnType(Types.VARBINARY, "blob");
         registerColumnType(Types.LONGVARBINARY, "blob");
-        // registerColumnType(Types.NULL, "null");
         registerColumnType(Types.BLOB, "blob");
         registerColumnType(Types.CLOB, "clob");
         registerColumnType(Types.BOOLEAN, "integer");
-
         registerFunction("concat", new VarArgsSQLFunction(StringType.INSTANCE, "", "||", ""));
         registerFunction("mod", new SQLFunctionTemplate(StringType.INSTANCE, "?1 % ?2"));
         registerFunction("substr", new StandardSQLFunction("substr", StringType.INSTANCE));
@@ -45,11 +43,10 @@ public class SQLDialect extends Dialect {
     }
 
     public boolean hasDataTypeInIdentityColumn() {
-        return false; // As specify in NHibernate dialect
+        return false;
     }
 
     public String getIdentityColumnString() {
-        // return "integer primary key autoincrement";
         return "integer";
     }
 
@@ -94,7 +91,7 @@ public class SQLDialect extends Dialect {
     }
 
     public boolean hasAlterTable() {
-        return false; // As specify in NHibernate dialect
+        return false;
     }
 
     public boolean dropConstraints() {

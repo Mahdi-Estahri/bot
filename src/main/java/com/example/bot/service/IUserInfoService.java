@@ -1,4 +1,4 @@
-package com.example.bot.service.userInfo;
+package com.example.bot.service;
 
 import com.example.bot.model.user.UserInfo;
 import org.springframework.data.repository.CrudRepository;

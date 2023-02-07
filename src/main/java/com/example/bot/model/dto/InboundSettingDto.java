@@ -8,8 +8,5 @@ import java.util.Set;
 @Getter
 @Setter
 public class InboundSettingDto {
-    private String clients;
-    private String decryption;
-    private String fallbacks;
-
+    private String clients, decryption, fallbacks;
 }

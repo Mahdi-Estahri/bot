@@ -9,11 +9,9 @@ import javax.persistence.*;
 @Setter
 @Entity
 @Table(name = "inbound_client_ips", indexes = {@Index(name = "idx_inboundclientips_unq", columnList = "client_email", unique = true)})
-
 public class InboundClientIps {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_inbound_client_ips")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column(name = "client_email")
@@ -21,5 +19,4 @@ public class InboundClientIps {
 
     @Column(name = "ips")
     private String ips;
-
 }

@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Table(name = "users")
 public class Users {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "users_db")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column(name = "username")
@@ -19,5 +19,4 @@ public class Users {
 
     @Column(name = "password")
     private String password;
-
 }

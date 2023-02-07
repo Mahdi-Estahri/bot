@@ -14,9 +14,8 @@ import java.util.UUID;
 @Entity
 @Table(name = "user_config_info")
 public class UserConfigInfo {
-
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_user_config_info")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column(name = "uuid")
@@ -43,6 +42,4 @@ public class UserConfigInfo {
 
     @Column(name = "qr_code")
     private String qrCode;
-
-
 }

@@ -1,4 +1,4 @@
-package com.example.bot.service.clientTrafic;
+package com.example.bot.service;
 
 import com.example.bot.model.InboundSettingClients;
 import org.springframework.data.repository.CrudRepository;

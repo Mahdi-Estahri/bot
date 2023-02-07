@@ -6,12 +6,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class InboundSettingClientsDto {
+    private String id, flow, email;
 
-    private String id;
-    private String flow;
-    private String email;
-    private Integer limitIp;
-    private Integer alterId;
+    private Integer limitIp, alterId;
+
     private Float totalGB;
+
     private Long expiryTime;
 }

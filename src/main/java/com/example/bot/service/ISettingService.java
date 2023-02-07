@@ -1,4 +1,4 @@
-package com.example.bot.service.admin;
+package com.example.bot.service;
 
 import com.example.bot.model.Settings;
 import org.springframework.data.repository.CrudRepository;

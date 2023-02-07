@@ -11,10 +11,9 @@ import javax.validation.constraints.NotNull;
 @Entity
 @Table(name = "user_info")
 public class UserInfo {
-
     @Id
     @NotNull
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "seq_user_info")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @NotNull
@@ -46,5 +45,4 @@ public class UserInfo {
 
     @Column(name = "password")
     private String password;
-
 }

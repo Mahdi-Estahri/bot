@@ -13,7 +13,7 @@ import javax.persistence.*;
 @Setter
 public class InboundSettingClients {
     @Id
-    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "sequence_db")
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
 
     @Column(name = "uuid")
@@ -33,5 +33,4 @@ public class InboundSettingClients {
 
     @Column(name = "expiryTime")
     private Long expiryTime;
-
 }

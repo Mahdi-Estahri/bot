@@ -6,44 +6,41 @@ import com.example.bot.model.Inbounds;
 import com.example.bot.model.dto.InboundSettingClientsDto;
 import com.example.bot.model.dto.VmessDto;
 import com.example.bot.model.user.UserInfo;
-import com.example.bot.service.clientTrafic.IClientTraficService;
-import com.example.bot.service.clientTrafic.IInboundsService;
-import com.example.bot.service.clientTrafic.ISettingClientsService;
-import com.example.bot.service.userInfo.IUserInfoService;
-import com.fasterxml.jackson.core.JsonParseException;
+import com.example.bot.service.IClientTraficService;
+import com.example.bot.service.IInboundsService;
+import com.example.bot.service.IUserInfoService;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.zxing.WriterException;
 import com.vdurmont.emoji.EmojiParser;
 import ir.huri.jcal.JalaliCalendar;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import javax.transaction.Transactional;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.util.Base64;
+import java.util.Date;
+import java.util.Set;
 
-@Component
+@Service
 public class UserBotClass extends TelegramLongPollingBot {
 
     private static final String hello_user = "سلام به ربات رعدوبرق خوش اومدید! ";
 
-    private static final String bot_token = "5909727523:AAHxC2SxoVZ6Ev8UateQfqPirhuxuqK4kTU";
+    private static final String bot_token = "5956481568:AAFctqSPDbyeNyX9xPckfxeQmDjBltlHTbc";
 
-    private static final String bot_user_name = "gooolax_mamadbyavarBot";
+    private static final String bot_user_name = "Thunder_support3_bot";
 
     private static final String channel_user_name = "@thunder_fastvpn";
 
@@ -52,16 +49,13 @@ public class UserBotClass extends TelegramLongPollingBot {
     private static final String selectOption = "برای ادامه و مشاهده جزئیات اشتراک خود کانفیگ (vmess یا vless) خود را ارسال نمایید";
 
     @Autowired
-    IInboundsService iInboundsService;
+    private IInboundsService iInboundsService;
 
     @Autowired
-    IUserInfoService iUserInfoService;
+    private IUserInfoService iUserInfoService;
 
     @Autowired
-    ISettingClientsService iSettingClientsService;
-
-    @Autowired
-    IClientTraficService iClientTraficService;
+    private IClientTraficService iClientTraficService;
 
     @Transactional
     @Override
@@ -82,142 +76,99 @@ public class UserBotClass extends TelegramLongPollingBot {
             userInfo.setUserName(userName);
             userInfo.setRole(userRole);
             System.out.println(messageText);
-            if (messageText.equals("/start")) {
-                if (userRole.equals("kicked")) {
-                    sendMessageText("اکانت شما نامعتبر است.", userId);
-                    onClosing();
-                } else if (!userRole.equals("left") && !userRole.equals("restricted")) {
-                    sendMessageText(EmojiParser.parseToUnicode(":zap: ") + hello_user + EmojiParser.parseToUnicode(":zap: \n") + selectOption, userId);
-                } else {
-                    sendMessageText(EmojiParser.parseToUnicode(":loudspeaker: ") + joinChannelForUserBot, userId);
-                    onClosing();
-                }
+            if (messageText.equals("/start")) if (userRole.equals("kicked")) {
+                sendMessageText("اکانت شما نامعتبر است.", userId);
+                onClosing();
+            } else if (!userRole.equals("left") && !userRole.equals("restricted"))
+                sendMessageText(EmojiParser.parseToUnicode(":zap: ") + hello_user + EmojiParser.parseToUnicode(":zap: \n") + selectOption, userId);
+            else {
+                sendMessageText(EmojiParser.parseToUnicode(":loudspeaker: ") + joinChannelForUserBot, userId);
+                onClosing();
             }
             if (userRole.equals("member") || userRole.equals("administrator") || userRole.equals("creator")) {
                 if (messageText.startsWith("vless")) {
                     var configId = messageText.substring(messageText.lastIndexOf("://") + 3, messageText.indexOf("@"));
                     var host = messageText.substring(messageText.lastIndexOf("@") + 1, messageText.indexOf(".mamadbyavar.ir:"));
                     var port = messageText.substring(messageText.lastIndexOf(":") + 1, messageText.indexOf("?"));
-                    getQRCode(messageText, configId);
-//                    if (host.equals("m")) {
-                    Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(port);
-                    if (inbounds != null) {
-                        var inboundSetting = inbounds.getSettings();
-                        inboundSetting = inboundSetting.replace("\n", "");
-                        inboundSetting = inboundSetting.replace("\r", "");
-                        inboundSetting = inboundSetting.replace("\t", "");
-                        inboundSetting = inboundSetting.replace(" ", "");
-                        inboundSetting = inboundSetting.replace("{\"clients\":", "");
-                        inboundSetting = inboundSetting.replace(",\"decryption\":\"none\",\"fallbacks\":[]}", "");
-                        Set<InboundSettingClientsDto> inboundSettingClientsDtoSets = ConvertJsonToModelWeapon(inboundSetting);
-                        if (inboundSettingClientsDtoSets != null) {
-                            inboundSettingClientsDtoSets.forEach(c -> {
+                    getQRCode(messageText);
+                    if (host.equals("server2")) {
+                        Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(port);
+                        if (inbounds != null) {
+                            var inboundSetting = inbounds.getSettings().replace("\n", "").replace("\r", "").replace("\t", "").replace(" ", "").replace("{\"clients\":", "").replace(",\"decryption\":\"none\",\"fallbacks\":[]}", "");
+                            Set<InboundSettingClientsDto> inboundSettingClientsDtoSets = ConvertJsonToModelWeapon(inboundSetting);
+                            if (inboundSettingClientsDtoSets != null) inboundSettingClientsDtoSets.forEach(c -> {
                                 if (c.getId().equals(configId)) {
-                                    userInfo.setEmail(c.getEmail());
-                                    ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
-                                    userInfo.setEnable(clientTraffics.getEnable());
-                                    Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
-                                    String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
-//                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTeraffic(c.getTotalGB(), "خریداری شده") + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTeraffic(usage, "مصرف شده") + "\n";
-                                    if (c.getTotalGB() != 0) {
-                                        var total = (c.getTotalGB() - usage);
-                                        if (total > 0) {
-                                            clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic(total, "باقیمانده") + "\n";
-                                        } else {
-                                            clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + "حجم شما تمام شده است." + "\n";
-                                        }
-                                    } else {
-                                        clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic(0F, "باقیمانده") + "\n";
-                                    }
-                                    clientInfo += EmojiParser.parseToUnicode(":busts_in_silhouette: ") + "تعداد کاربر مجاز: " + (c.getLimitIp() != 0 ? c.getLimitIp() : "بدون محدودیت") + "\n";
-                                    if (c.getExpiryTime() != null && c.getExpiryTime() != 0) {
-                                        clientInfo += EmojiParser.parseToUnicode(":date: ") + " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
-                                    }
-                                    iUserInfoService.save(userInfo);
-                                    sendQrCode(clientInfo, userId, configId);
+                                    generateMessage(userInfo, userId, userFullName, userRole, c);
                                 }
                             });
-                        } else {
-                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
-                        }
-                    } else {
+                            else
+                                sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                        } else
+                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                    } else
                         sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
-                    }
-                /*    } else {
-                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی اشتباه می باشد. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
-                    }*/
                 }
                 if (messageText.startsWith("vmess")) {
                     var str = messageText.substring(messageText.lastIndexOf("://") + 3);
                     byte[] decoded = Base64.getDecoder().decode(str);
                     String decodedStr = new String(decoded, StandardCharsets.UTF_8);
                     VmessDto vmessDto = ConvertJsonToModelVmess(decodedStr);
-//                    if (vmessDto != null && vmessDto.getAdd().equals("server2.mamadbyavar.ir")) {
-                    Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(vmessDto.getPort());
-                    if (inbounds != null) {
-                        var inboundSetting = inbounds.getSettings();
-                        inboundSetting = inboundSetting.replace("\r", "");
-                        inboundSetting = inboundSetting.replace("\t", "");
-                        inboundSetting = inboundSetting.replace("\n", "");
-                        inboundSetting = inboundSetting.replace(" ", "");
-                        inboundSetting = inboundSetting.replace("{\"clients\":", "");
-                        inboundSetting = inboundSetting.replace(",\"disableInsecureEncryption\":false}", "");
-                        Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
-                        if (inboundSettingClientsDtos != null) {
-                            inboundSettingClientsDtos.forEach(c -> {
-                                getQRCode(messageText, c.getId());
-                                if (c.getId().equals(vmessDto.getId())) {
-                                    userInfo.setEmail(c.getEmail());
-                                    ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
-                                    userInfo.setEnable(clientTraffics.getEnable());
-                                    Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
-                                    String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n";
-//                                        clientInfo += "نام کاربری: " + c.getEmail() + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTeraffic(c.getTotalGB(), "خریداری شده") + "\n";
-                                    clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTeraffic(usage, "مصرف شده") + "\n";
-                                    if (c.getTotalGB() != 0) {
-                                        clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic((c.getTotalGB() - usage), "باقیمانده") + "\n";
-                                    } else {
-                                        clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTeraffic(0F, "باقیمانده") + "\n";
+                    if (vmessDto != null && vmessDto.getAdd().equals("server2.mamadbyavar.ir")) {
+                        Inbounds inbounds = iInboundsService.getInboundsByTagEndingWith(vmessDto.getPort());
+                        if (inbounds != null) {
+                            var inboundSetting = inbounds.getSettings().replace("\r", "").replace("\t", "").replace("\n", "").replace(" ", "").replace("{\"clients\":", "").replace(",\"disableInsecureEncryption\":false}", "");
+                            Set<InboundSettingClientsDto> inboundSettingClientsDtos = ConvertJsonToModelWeapon(inboundSetting);
+                            if (inboundSettingClientsDtos != null) {
+                                final boolean[] isInDatabase = {false};
+                                inboundSettingClientsDtos.forEach(c -> {
+                                    getQRCode(messageText);
+                                    if (c.getId().equals(vmessDto.getId())) {
+                                        isInDatabase[0] = true;
+                                        generateMessage(userInfo, userId, userFullName, userRole, c);
                                     }
-                                    clientInfo += EmojiParser.parseToUnicode(":busts_in_silhouette: ") + "تعداد کاربر مجاز: " + (c.getLimitIp() != 0 ? c.getLimitIp() : "بدون محدودیت") + "\n";
-                                    if (c.getExpiryTime() != null && c.getExpiryTime() != 0) {
-                                        clientInfo += EmojiParser.parseToUnicode(":date: ") + " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
-                                    }
-                                    iUserInfoService.save(userInfo);
-                                    sendQrCode(clientInfo, userId, c.getId());
-                                }
-                            });
-                        } else {
-                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
-                        }
-                    } else {
-                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
-                    }
-//                    } else {
-//                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی غیر مجاز می باشد. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
-//                    }
+                                });
+                                if (!isInDatabase[0])
+                                    sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
+                            } else
+                                sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(":no_entry_sign: "), userId);
+                        } else
+                            sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " مشخصات شما یافت نشد لطفا به پشتیبان Thunder پیام دهید. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
+                    } else
+                        sendMessageText(EmojiParser.parseToUnicode(":no_entry_sign: ") + " کانفیگ ارسالی غیر مجاز می باشد. " + EmojiParser.parseToUnicode(" :no_entry_sign: "), userId);
                 }
-            } else {
-                onClosing();
-            }
+            } else onClosing();
         }
     }
 
+    private void generateMessage(UserInfo userInfo, Long userId, String userFullName, String userRole, InboundSettingClientsDto c) {
+        userInfo.setEmail(c.getEmail());
+        ClientTraffics clientTraffics = iClientTraficService.getClientTrafficsByEmailEquals(c.getEmail());
+        userInfo.setEnable(clientTraffics.getEnable());
+        Float usage = clientTraffics.getDownload() + clientTraffics.getUpload();
+        String clientInfo = (clientTraffics.getEnable() != 0 ? EmojiParser.parseToUnicode(":bulb: ") : EmojiParser.parseToUnicode(":black_large_square: ")) + "وضعیت: " + (clientTraffics.getEnable() != 0 ? "فعال" : "غیرفعال") + "\n" + (EmojiParser.parseToUnicode(":bust_in_silhouette: ") + "کاربر: " + userFullName + "\n");
+        if (userRole.equals("creator") || userRole.equals("administrator"))
+            clientInfo += "نام کاربری: " + c.getEmail() + "\n";
+        clientInfo += EmojiParser.parseToUnicode(":floppy_disk: ") + calculateTraffic(c.getTotalGB(), "خریداری شده") + "\n";
+        clientInfo += EmojiParser.parseToUnicode(":arrow_down_small: ") + calculateTraffic(usage, "مصرف شده") + "\n";
+        if (c.getTotalGB() != 0) {
+            var total = (c.getTotalGB() - usage);
+            if (total > 0)
+                clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTraffic(total, "باقیمانده") + "\n";
+            else clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + "حجم شما تمام شده است." + "\n";
+        } else
+            clientInfo += EmojiParser.parseToUnicode(":white_check_mark: ") + calculateTraffic(0F, "باقیمانده") + "\n";
+        clientInfo += EmojiParser.parseToUnicode(":busts_in_silhouette: ") + "تعداد کاربر مجاز: " + (c.getLimitIp() != 0 ? c.getLimitIp() : "بدون محدودیت") + "\n";
+        if (c.getExpiryTime() != null && c.getExpiryTime() != 0)
+            clientInfo += EmojiParser.parseToUnicode(":date: ") + " تاریخ اتمام اشتراک: " + calculateTime(c.getExpiryTime()) + "\n";
+        iUserInfoService.save(userInfo);
+        sendQrCode(clientInfo, userId);
+    }
 
     private Set<InboundSettingClientsDto> ConvertJsonToModelWeapon(String input) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(input, new TypeReference<Set<InboundSettingClientsDto>>() {
+            return mapper.readValue(input, new TypeReference<>() {
             });
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -227,39 +178,26 @@ public class UserBotClass extends TelegramLongPollingBot {
     private VmessDto ConvertJsonToModelVmess(String input) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            return mapper.readValue(input, new TypeReference<VmessDto>() {
+            return mapper.readValue(input, new TypeReference<>() {
             });
-        } catch (JsonParseException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
         }
         return null;
     }
 
-    private String calculateTeraffic(Float hajm, String text) {
-        if (hajm == 0 && !text.startsWith("مصرف")) {
-            return "مقدار حجم " + text + ": نامحدود \n";
-        }
-        if (hajm <= 1024) {
-            return "مقدار حجم " + text + "(B): " + String.format("%.2f", hajm) + " بایت \n";
-        }
-        if (hajm <= 1024 * 1024) {
-            return "مقدار حجم " + text + "(KB): " + String.format("%.2f", hajm / 1024) + " کیلوبایت \n";
-        }
-        if (hajm <= Float.parseFloat("1073741824")) {
-            return "مقدار حجم " + text + " (MB):" + String.format("%.2f", hajm / (1024 * 1024)) + " مگابایت \n ";
-        }
-        if (hajm <= Float.parseFloat("1099511627776")) {
-            return "مقدار حجم " + text + "(GB): " + String.format("%.2f", hajm / Float.parseFloat("1073741824")) + " گیگابایت \n";
-        }
-        if (hajm <= Float.parseFloat("1125899906842624")) {
-            return "مقدار حجم " + text + "(TB): " + String.format("%.2f", hajm / Float.parseFloat("1099511627776")) + " ترابایت \n";
-        } else {
-            return "\n";
-        }
+    private String calculateTraffic(Float volume, String text) {
+        if (volume == 0 && !text.startsWith("مصرف")) return "مقدار حجم " + text + ": نامحدود \n";
+        if (volume < 1024) return "مقدار حجم " + text + "(B): " + String.format("%.2f", volume) + " بایت \n";
+        if (volume < 1024 * 1024)
+            return "مقدار حجم " + text + "(KB): " + String.format("%.2f", volume / 1024) + " کیلوبایت \n";
+        if (volume < Float.parseFloat("1073741824"))
+            return "مقدار حجم " + text + " (MB):" + String.format("%.2f", volume / (1024 * 1024)) + " مگابایت \n ";
+        if (volume < Float.parseFloat("1099511627776"))
+            return "مقدار حجم " + text + "(GB): " + String.format("%.2f", volume / Float.parseFloat("1073741824")) + " گیگابایت \n";
+        if (volume <= Float.parseFloat("1125899906842624"))
+            return "مقدار حجم " + text + "(TB): " + String.format("%.2f", volume / Float.parseFloat("1099511627776")) + " ترابایت \n";
+        else return "\n";
     }
 
     private String calculateTime(Long expiryTime) {
@@ -277,35 +215,27 @@ public class UserBotClass extends TelegramLongPollingBot {
     }
 
     @SneakyThrows
-    public void sendQrCode(String text, Long userId, String configId) {
+    public void sendQrCode(String text, Long userId) {
         try {
             SendPhoto sendPhoto = new SendPhoto();
             sendPhoto.setChatId(userId);
             sendPhoto.setCaption(text);
-            sendPhoto.setPhoto(new InputFile(new File("./src/main/resources/img/qrCode/" + configId + ".png")));
+            sendPhoto.setPhoto(new InputFile(new File("src/main/resources/img/qrCode/QRCode.png")));
             execute(sendPhoto);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
 
-    public String getQRCode(String config, String configId) {
-
+    public void getQRCode(String config) {
         byte[] image = new byte[0];
         try {
-
-            // Generate and Return Qr Code in Byte Array
             image = QRCodeGenerator.getQRCodeImage(config, 350, 350);
-
-            // Generate and Save Qr Code Image in static/image folder
-            QRCodeGenerator.generateQRCodeImage(config, 350, 350, "./src/main/resources/img/qrCode/" + configId + ".png");
-
+            QRCodeGenerator.generateQRCodeImage(config, 350, 350, "src/main/resources/img/qrCode/QRCode.png");
         } catch (WriterException | IOException e) {
             e.printStackTrace();
         }
-        // Convert Byte Array into Base64 Encode String
-
-        return Base64.getEncoder().encodeToString(image);
+        Base64.getEncoder().encodeToString(image);
     }
 
     public String checkChannelMember(Long userId) throws TelegramApiException {
@@ -313,17 +243,6 @@ public class UserBotClass extends TelegramLongPollingBot {
         getChatMember.setUserId(userId);
         getChatMember.setChatId(channel_user_name);
         return execute(getChatMember).getStatus();
-    }
-
-    public void setKeyboard() {
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        List<KeyboardRow> keyboardRows = new ArrayList<>();
-        KeyboardRow keyboardButton = new KeyboardRow();
-        keyboardButton.add("1.1");
-        keyboardButton.add("1.2");
-        keyboardButton.add("1.3");
-        keyboardRows.add(keyboardButton);
-        replyKeyboardMarkup.setKeyboard(keyboardRows);
     }
 
     @Override
